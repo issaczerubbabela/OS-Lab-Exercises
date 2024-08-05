@@ -1,38 +1,49 @@
 #include<stdio.h>
+#include<sys/wait.h>
+#include<stdlib.h>
 #include<unistd.h>
 
 int main()
 {
 	int a,b;
 	int pipefd1[2], pipefd2[2];
-	int o,p,q;
-	int x=fork();
-	if(x>0)
+	pipe(pipefd1);
+	pipe(pipefd2);
+
+	pid_t p1=fork();
+	if(p1==0)
 	{
+		close(pipefd1[0]);
 		printf("Enter an integer: ");
-		scanf("%i",a);
-		write(pipefd1[1],a,sizeof(a));
+		scanf("%i",&a);
+		write(pipefd1[1],&a,sizeof(int));
+		close(pipefd1[1]);
+		exit(0);
 	}
-	else if(x==0)
+	else
 	{
-		int y = fork();
-		if(y>0)
+		pid_t p2 = fork();
+		if(p2==0)
 		{
+			close(pipefd1[1]); // Close write end from p1
+            		close(pipefd2[0]); // Close read end
+			read(pipefd1[0],&a,sizeof(int));
 			printf("Enter another integer: ");
-			scanf("%i",b);
-			write(pipefd2[1],b,sizeof(b));
-			read(pipefd1[0],o,sizeof(o));
-			write(pipefd2[1],o, sizeof(o));
+			scanf("%i",&b);
+			write(pipefd2[1],&a,sizeof(int));
+			write(pipefd2[1],&b, sizeof(int));
+			close(pipefd1[0]);            
+			close(pipefd2[1]);
+			exit(0);
 		}
-		else if(y==0)
+		else
 		{
-			read(pipefd1[0],p,sizeof(p));
-			read(pipefd1[0],q,sizeof(q));
-			printf("The sum of the two integers is: %d",p+q);
-			
+			close(pipefd2[1]);
+			read(pipefd1[0],&a,sizeof(int));
+			read(pipefd1[0],&b,sizeof(int));
+			printf("The sum of the two integers is: %d",a+b);
+			close(pipefd2[0]);
+            		wait(NULL); // Wait for child processes to finish
 		}
-		else printf("Failed");
-		
 	}
-	else printf("Failed");
 }
