@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 int main()
 {
@@ -9,25 +12,28 @@ int main()
     pipe(pipefd1);
     pipe(pipefd2);
 
-    int x = fork();
+    pid_t x = fork();
     if (x > 0)
     {
         // Parent process (Process 1)
         printf("Enter an integer: ");
-        scanf("%i", &a);
+        scanf("%d", &a);
         write(pipefd1[1], &a, sizeof(a));
+        close(pipefd1[1]); // Close write end of pipe1
+        wait(NULL); // Wait for child process 2 to finish
     }
     else if (x == 0)
     {
-        int y = fork();
+        pid_t y = fork();
         if (y > 0)
         {
             // First child process (Process 2)
-            printf("Enter another integer: ");
-            scanf("%i", &b);
-            write(pipefd2[1], &b, sizeof(b));
             read(pipefd1[0], &o, sizeof(o));
-            write(pipefd2[1], &o, sizeof(o));
+            printf("Enter another integer: ");
+            scanf("%d", &b);
+            write(pipefd2[1], &b, sizeof(b));
+            close(pipefd1[0]); // Close read end of pipe1
+            close(pipefd2[1]); // Close write end of pipe2
         }
         else if (y == 0)
         {
@@ -38,12 +44,14 @@ int main()
         }
         else
         {
-            printf("Failed to fork\n");
+            perror("Failed to fork");
+            exit(EXIT_FAILURE);
         }
     }
     else
     {
-        printf("Failed to fork\n");
+        perror("Failed to fork");
+        exit(EXIT_FAILURE);
     }
 
     return 0;
