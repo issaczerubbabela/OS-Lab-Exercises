@@ -16,8 +16,9 @@ int main()
     printf("Process attached at %p\n", shared_memory);
 
     // Loop to read input until "end" is encountered
+    printf("Enter text (type 'end' on a new line to stop):\n");
+    char *ptr = (char*)shared_memory;
     while (1) {
-        printf("Enter some text (type 'end' to stop): ");
         fgets(buff, 100, stdin);
         buff[strcspn(buff, "\n")] = 0; // Remove newline character
 
@@ -25,10 +26,13 @@ int main()
             break;
         }
 
-        strcpy((char*)shared_memory, buff);
-        printf("Data written to shared memory: %s\n", (char*)shared_memory);
+        strcpy(ptr, buff);
+        ptr += strlen(buff);
+        *ptr = '\n'; // Add newline character
+        ptr++;
     }
+    *ptr = '\0'; // Null-terminate the string
 
-    printf("Data read from shared memory is: %s\n", (char*)shared_memory);
+    printf("Data written to shared memory:\n%s\n", (char*)shared_memory);
     return 0;
 }
