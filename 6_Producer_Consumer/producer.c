@@ -11,7 +11,7 @@ int main() {
     key_t key2 = 2345;
     key_t key3 = 3456;
 
-    // Create shared memory for mutex
+    // Create shared memory for semaphore
     int shmid1 = shmget(key1, sizeof(sem_t), 0666 | IPC_CREAT);
     sem_t *mutex = (sem_t *) shmat(shmid1, NULL, 0);
     sem_init(mutex, 1, 1); // Initialize semaphore for mutual exclusion
@@ -25,14 +25,22 @@ int main() {
     int *index = (int *) shmat(shmid3, NULL, 0);
     *index = 0; // Initialize index
 
-    for (int i = 0; i < 5; i++) {
-        sem_wait(mutex);
-        printf("Enter value to be produced: ");
-        scanf("%d", &buffer[*index]);
-        printf("Produced %d\n", buffer[*index]);
-        *index += 1;
-        sem_post(mutex);
-        sleep(3);
+    char input;
+    while (1) {
+        printf("Do you want to produce a value? (y/n): ");
+        scanf(" %c", &input);
+
+        if (input == 'n') {
+            break;
+        } else if (input == 'y') {
+            sem_wait(mutex);
+            printf("Enter value to be produced: ");
+            scanf("%d", &buffer[*index]);
+            printf("Produced %d\n", buffer[*index]);
+            *index += 1;
+            sem_post(mutex);
+            sleep(3);
+        }
     }
 
     // Detach from shared memory
