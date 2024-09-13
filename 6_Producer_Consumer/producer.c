@@ -11,19 +11,20 @@ int main() {
     key_t key2 = 2345;
     key_t key3 = 3456;
 
-    // Create shared memory for semaphore
+    // mutex
     int shmid1 = shmget(key1, sizeof(sem_t), 0666 | IPC_CREAT);
     sem_t *mutex = (sem_t *) shmat(shmid1, NULL, 0);
-    sem_init(mutex, 1, 1); // Initialize semaphore for mutual exclusion
+    // I'm using sem_post and sem_wait instead of incrementing and decrementing mutex manually.
+    sem_init(mutex, 1, 1);
 
-    // Create shared memory for buffer
+    // buffer
     int shmid2 = shmget(key2, 100, 0666 | IPC_CREAT);
     int *buffer = (int *) shmat(shmid2, NULL, 0);
 
-    // Create shared memory for index
+    // index
     int shmid3 = shmget(key3, sizeof(int), 0666 | IPC_CREAT);
     int *index = (int *) shmat(shmid3, NULL, 0);
-    *index = 0; // Initialize index
+    *index = 0;
 
     char input;
     while (1) {
@@ -33,13 +34,17 @@ int main() {
         if (input == 'n') {
             break;
         } else if (input == 'y') {
+            if(*index==5){
+                printf("Data Buffer Full\n");
+                continue;
+            }
             sem_wait(mutex);
             printf("Enter value to be produced: ");
             scanf("%d", &buffer[*index]);
             printf("Produced %d\n", buffer[*index]);
             *index += 1;
-            sem_post(mutex);
             sleep(3);
+            sem_post(mutex);
         }
     }
 
