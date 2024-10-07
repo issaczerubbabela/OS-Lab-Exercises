@@ -34,13 +34,17 @@ int main() {
         if (input == 'n') {
             break;
         } else if (input == 'y') {
+            if(*index==5){
+                printf("Data Buffer Full\n");
+                continue;
+            }
             sem_wait(mutex);
             printf("Enter value to be produced: ");
             scanf("%d", &buffer[*index]);
             printf("Produced %d\n", buffer[*index]);
             *index += 1;
-            sem_post(mutex);
             sleep(3);
+            sem_post(mutex);
         }
     }
 
