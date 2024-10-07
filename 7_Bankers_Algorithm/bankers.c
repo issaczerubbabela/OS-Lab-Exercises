@@ -1,21 +1,21 @@
 #include<stdio.h>
 
-int* calculateNeedMatrix(int* proc, int* need, int res, int n){
+int** calculateNeedMatrix(int* proc, int* need, int res, int n){
 
 	//calculate the need matrix
 	for(int i=0;i<n;i++){
 		for(int j=0;j<res;j++){
 			//need = max - allocated
-			need[i][0][j] = proc[n][1][j]-proc[n][1][j]
+			need[i][0][j] = proc[n][1][j]-proc[n][0][j];
 		}
 	}
 	return need;
 }
-int* giveSafeSequence(int* proc, int* available, int* need, int res, int n, int* safe){
+int*** giveSafeSequence(int* proc, int* available, int* need, int res, int n, int* safe){
 	
 	//checks for sequence with safe state else gives no safe state
 	int safeSeq[n]; //done array to denote processes safely allocated
-	for(int i=0;i<n;i++{
+	for(int i=0;i<n;i++){
 		safeSeq[i]=0;
 	}
 
@@ -91,14 +91,17 @@ int main(){
 		printf("\nResource %d:",j);
 		scanf("%d",&available[j]);
 		}
+	need = calculateNeedMatrix(proc, need, res, n);
 	int safe=1;
-	int* safeSeq = giveSafeSequence(proc, available, calculateNeedMatrix(proc, need, res, n), res, n, &safe);
+	int* safeSeq = giveSafeSequence(proc[n][2][res], available[res], need[n][1][res], res, n, &safe);
 	
 	if(safe==1){
 		printf("The safe sequence is:");
 		for(int i=0;i<0;i++){
 			if(safeSeq[i]==i+1){
 				printf(" p%d",i);
+			}
+		}
 	}
 	return 0;
 }
